@@ -1,0 +1,21 @@
+// 1. Βρίσκουμε το πλαίσιο του chat
+var chatContent = document.getElementById('chat-content');
+
+// 2. Φτιάχνουμε το HTML του μηνύματος
+var messageHTML = `
+  <div style="display:flex; flex-direction:column; align-items: flex-end; margin-bottom: 8px;">
+    <div style="max-width:85%; padding:8px 12px; border-radius:18px; font-size:13px; background: #0084ff; color: white;">
+      <%= j @message.body %>
+    </div>
+    <small style="font-size:10px; color:#65676b; margin-top:2px;">Τώρα • Εσείς</small>
+  </div>
+`;
+
+// 3. Το "πετάμε" μέσα στο chat-content
+chatContent.insertAdjacentHTML('beforeend', messageHTML);
+
+// 4. Καθαρίζουμε το κουτάκι κειμένου
+document.getElementById('chat-input').value = '';
+
+// 5. Σκρολάρουμε αυτόματα στο τέλος
+chatContent.scrollTop = chatContent.scrollHeight;

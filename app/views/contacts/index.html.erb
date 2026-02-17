@@ -1,0 +1,32 @@
+<h1>Οι Επαφές μου</h1>
+
+<% if @contacts.present? %>
+  <table border="1" style="width: 100%; border-collapse: collapse;">
+    <thead>
+      <tr style="background: #eee;">
+        <th>Username</th>
+        <th>Email</th>
+        <th>Ενέργειες</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @contacts.each do |contact| %>
+        <% user = User.find_by(id: contact.contact_user_id) %>
+        <% if user %>
+          <tr>
+            <td><%= user.username %></td>
+            <td><%= user.email %></td>
+            <td>
+              <%= link_to 'Διαγραφή', contact_path(contact), data: { turbo_method: :delete, turbo_confirm: 'Είσαι σίγουρος;' }, style: "color: red;" %>
+            </td>
+          </tr>
+        <% end %>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>Δεν έχετε προσθέσει ακόμα επαφές.</p>
+<% end %>
+
+<br>
+<%= link_to 'Πίσω στα Posts', posts_path %>

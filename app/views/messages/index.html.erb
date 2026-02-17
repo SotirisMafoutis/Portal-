@@ -1,0 +1,78 @@
+<div style="padding: 30px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; min-height: 100vh;">
+  
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h1 style="color: #1c1e21; margin: 0;"> Τα Μηνύματά μου</h1>
+    <button onclick="document.getElementById('fullPageModal').style.display='block'" 
+            style="background: #0084ff; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s;">
+      + Σύνθεση Μηνύματος
+    </button>
+  </div>
+
+  <%# ΔΥΟ ΣΤΗΛΕΣ: ΕΙΣΕΡΧΟΜΕΝΑ | ΑΠΕΣΤΑΛΜΕΝΑ %>
+  <div style="display: flex; gap: 30px;">
+    
+    <div style="flex: 1; background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px;">
+      <h3 style="border-bottom: 2px solid #0084ff; padding-bottom: 10px; color: #0084ff;">📥 Εισερχόμενα</h3>
+      <div style="max-height: 600px; overflow-y: auto; margin-top: 15px;">
+        <% if @received_messages.any? %>
+          <% @received_messages.each do |msg| %>
+            <div style="background: #f8f9fa; border: 1px solid #e4e6eb; padding: 15px; margin-bottom: 10px; border-radius: 8px; position: relative;">
+              <strong style="color: #1c1e21;">Από: <%= msg.sender.username %></strong>
+              <p style="margin: 10px 0; color: #4b4f56; line-height: 1.4;"><%= msg.body %></p>
+              <small style="color: #90949c;"><%= msg.created_at.strftime("%d/%m/%Y %H:%M") %></small>
+            </div>
+          <% end %>
+        <% else %>
+          <p style="text-align: center; color: #90949c; margin-top: 20px;">Δεν έχετε λάβει μηνύματα ακόμα.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div style="flex: 1; background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px;">
+      <h3 style="border-bottom: 2px solid #673ab7; padding-bottom: 10px; color: #673ab7;">📤 Απεσταλμένα</h3>
+      <div style="max-height: 600px; overflow-y: auto; margin-top: 15px;">
+        <% if @sent_messages.any? %>
+          <% @sent_messages.each do |msg| %>
+            <div style="background: #f3e5f5; border: 1px solid #d1c4e9; padding: 15px; margin-bottom: 10px; border-radius: 8px;">
+              <strong style="color: #1c1e21;">Προς: <%= msg.recipients.map(&:username).join(", ") %></strong>
+              <p style="margin: 10px 0; color: #4b4f56; line-height: 1.4;"><%= msg.body %></p>
+              <small style="color: #90949c;"><%= msg.created_at.strftime("%d/%m/%Y %H:%M") %></small>
+            </div>
+          <% end %>
+        <% else %>
+          <p style="text-align: center; color: #90949c; margin-top: 20px;">Δεν έχετε στείλει μηνύματα ακόμα.</p>
+        <% end %>
+      </div>
+    </div>
+
+  </div>
+
+  <%# POPUP MODAL ΓΙΑ ΝΕΟ ΜΗΝΥΜΑ (ΜΕΣΑ ΣΤΗ ΣΕΛΙΔΑ) %>
+  <div id="fullPageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10001;">
+    <div style="background: white; width: 500px; margin: 10% auto; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+      <h2 style="margin-top: 0;">Νέο Μήνυμα</h2>
+      <%= form_with url: messages_path, method: :post, local: true do |f| %>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Επιλογή Παραληπτών:</label>
+          <%= select_tag "recipient_ids[]", options_from_collection_for_select(User.where.not(id: current_user.id), :id, :username), 
+                         multiple: true, required: true, 
+                         style: "width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; height: 100px;" %>
+          <small style="color: #666;">Κρατήστε το Ctrl (ή Command) για πολλαπλή επιλογή.</small>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 5px; font-weight: bold;">Μήνυμα:</label>
+          <%= f.text_area :body, required: true, placeholder: "Γράψτε το μήνυμά σας εδώ...", 
+                          style: "width: 100%; height: 120px; padding: 10px; border: 1px solid #ccc; border-radius: 6px; resize: none;" %>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" onclick="document.getElementById('fullPageModal').style.display='none'" 
+                  style="background: #e4e6eb; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Ακύρωση</button>
+          <%= f.submit "Αποστολή", style: "background: #0084ff; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+</div>

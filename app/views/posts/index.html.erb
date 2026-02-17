@@ -1,0 +1,346 @@
+<style>
+  .feed-wrapper {
+    background-color: #f0f2f5;
+    min-height: 100vh;
+    padding: 40px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .feed-header {
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+
+  .feed-header h1 { font-size: 28px; font-weight: 800; color: #1c1e21; margin: 0; }
+
+  .header-actions { display: flex; align-items: center; gap: 10px; }
+
+  .btn-new-post {
+    background: #1877f2; color: white; text-decoration: none;
+    padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 15px;
+    transition: background 0.2s; box-shadow: 0 4px 12px rgba(24,119,242,0.2);
+  }
+  .btn-new-post:hover { background: #166fe5; }
+
+  #search-posts-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #f0f2f5; color: #050505; border: 1.5px solid #dddfe2;
+    border-radius: 8px; padding: 10px 16px; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; font-family: -apple-system, sans-serif;
+    white-space: nowrap;
+  }
+  #search-posts-btn:hover  { background: #e4e6eb; border-color: #ccd0d5; }
+  #search-posts-btn.active { background: #e7f3ff; color: #1877f2; border-color: #1877f2; }
+
+  .search-posts-wrap { position: relative; }
+
+  #search-posts-panel {
+    display: none; position: absolute; top: calc(100% + 8px); right: 0;
+    width: 520px; max-width: calc(100vw - 40px); background: white;
+    border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    z-index: 999; padding: 16px; border: 1px solid #dddfe2;
+    animation: spDrop 0.18s ease;
+  }
+  #search-posts-panel.open { display: block; }
+  @keyframes spDrop {
+    from { opacity:0; transform: translateY(-6px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  .sp-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  #sp-keyword {
+    flex: 1; border: 1.5px solid #e4e6eb; border-radius: 20px;
+    padding: 9px 16px; font-size: 14px; outline: none;
+    font-family: -apple-system, sans-serif; transition: border-color 0.15s;
+  }
+  #sp-keyword:focus { border-color: #1877f2; }
+  #sp-go-btn {
+    background: #1877f2; color: white; border: none; border-radius: 20px;
+    padding: 9px 20px; font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: -apple-system, sans-serif; transition: background 0.15s;
+  }
+  #sp-go-btn:hover { background: #166fe5; }
+
+  .sp-filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+  .sp-filters label { font-size: 12px; color: #65676b; font-weight: 600; }
+  .sp-select {
+    border: 1.5px solid #e4e6eb; border-radius: 20px; padding: 5px 12px;
+    font-size: 13px; outline: none; background: #f0f2f5; cursor: pointer;
+    font-family: -apple-system, sans-serif; transition: border-color 0.15s;
+  }
+  .sp-select:focus { border-color: #1877f2; }
+
+  .sp-users-row {
+    display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+    margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f0f2f5;
+  }
+  .sp-users-row > label { font-size: 12px; color: #65676b; font-weight: 600; }
+  .sp-chip {
+    display: inline-flex; align-items: center; gap: 4px; background: #f0f2f5;
+    color: #050505; border: 1.5px solid transparent; border-radius: 20px;
+    padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: all 0.12s; user-select: none; font-family: -apple-system, sans-serif;
+  }
+  .sp-chip:hover    { background: #e4e6eb; }
+  .sp-chip.selected { background: #e7f3ff; color: #1877f2; border-color: #1877f2; }
+
+  #sp-results-wrap { max-height: 300px; overflow-y: auto; }
+  #sp-loading { text-align: center; padding: 20px; color: #65676b; font-size: 13px; display: none; }
+  .sp-spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid #e4e6eb; border-top-color: #1877f2;
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+    vertical-align: middle; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #sp-empty { text-align: center; padding: 24px; color: #65676b; font-size: 14px; display: none; }
+
+  .sp-cat-header {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 800; color: #65676b;
+    text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 4px 4px;
+  }
+  .sp-count { background: #e4e6eb; border-radius: 10px; padding: 1px 7px; font-size: 11px; color: #444; }
+
+  .sp-card {
+    display: flex; align-items: flex-start; gap: 10px; padding: 8px;
+    border-radius: 8px; text-decoration: none; color: inherit;
+    transition: background 0.12s; cursor: pointer;
+  }
+  .sp-card:hover { background: #f0f2f5; }
+  .sp-card-icon {
+    width: 36px; height: 36px; border-radius: 50%; background: #e7f3ff;
+    display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .sp-card-body { flex: 1; min-width: 0; }
+  .sp-card-author { font-size: 13px; font-weight: 700; color: #050505; }
+  .sp-card-snippet { font-size: 12px; color: #65676b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  .sp-card-time { font-size: 11px; color: #bbb; margin-top: 1px; }
+  .sp-tag { font-size: 11px; font-weight: 700; border-radius: 10px; padding: 2px 8px; flex-shrink: 0; align-self: flex-start; margin-top: 4px; background: #e7f3ff; color: #1877f2; }
+
+  .post-card {
+    background: #ffffff; width: 100%; max-width: 700px; border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; padding: 25px;
+    border: 1px solid #dddfe2;
+  }
+  .post-card:hover { border-color: #ccd0d5; }
+  .post-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+  .user-avatar {
+    width: 40px; height: 40px; background: #e4e6eb; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .meta-info h3 { margin: 0; font-size: 16px; color: #050505; font-weight: 600; }
+  .meta-info span { font-size: 13px; color: #65676b; }
+  .post-title { font-size: 20px; font-weight: 700; color: #1c1e21; margin: 0 0 12px 0; line-height: 1.2; }
+  .post-content { font-size: 16px; color: #050505; line-height: 1.5; margin-bottom: 20px; white-space: pre-wrap; }
+  .post-actions { border-top: 1px solid #ebedf0; padding-top: 15px; display: flex; gap: 20px; }
+  .action-link {
+    text-decoration: none; color: #65676b; font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px; transition: color 0.2s;
+  }
+  .action-link:hover { color: #1877f2; }
+  .empty-state { text-align: center; padding: 50px; color: #65676b; }
+</style>
+
+<div class="feed-wrapper">
+  <div class="feed-header">
+    <h1>Ροή Αναρτήσεων</h1>
+
+    <div class="header-actions">
+      <div class="search-posts-wrap">
+        <button id="search-posts-btn" onclick="toggleSearchPanel()" type="button">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none"
+               stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="9" r="7"/>
+            <line x1="14.5" y1="14.5" x2="19" y2="19"/>
+          </svg>
+          Αναζήτηση Posts
+        </button>
+
+        <div id="search-posts-panel">
+
+          <div class="sp-input-row">
+            <input type="text" id="sp-keyword" placeholder="Αναζήτηση λέξης-κλειδί..."
+                   onkeydown="if(event.key==='Enter') runPostSearch()">
+            <button id="sp-go-btn" onclick="runPostSearch()" type="button">Αναζήτηση</button>
+          </div>
+
+          <div class="sp-filters">
+            <label>Κατηγορία:</label>
+            <%# Δυναμικές κατηγορίες από τη βάση — συμπληρώνονται από @categories στον controller %>
+            <select id="sp-category" class="sp-select">
+              <option value="">Όλες</option>
+              <% @categories.each do |cat| %>
+                <option value="<%= cat %>"><%= cat %></option>
+              <% end %>
+            </select>
+
+            <label style="margin-left:6px;">Ταξινόμηση:</label>
+            <select id="sp-sort" class="sp-select">
+              <option value="newest">Νεότερα πρώτα</option>
+              <option value="oldest">Παλαιότερα πρώτα</option>
+            </select>
+          </div>
+
+          <div class="sp-users-row">
+            <label>👤 Χρήστης:</label>
+            <div class="sp-chip selected" data-uid="all" onclick="toggleSpChip(this)">🌐 Όλοι</div>
+            <div class="sp-chip" data-uid="<%= current_user.id %>" onclick="toggleSpChip(this)">⭐ Εγώ</div>
+            <% current_user.friend_users.each do |u| %>
+              <div class="sp-chip" data-uid="<%= u.id %>" onclick="toggleSpChip(this)">
+                👤 <%= u.username || u.email.split('@').first %>
+              </div>
+            <% end %>
+          </div>
+
+          <div id="sp-loading"><span class="sp-spinner"></span>Αναζήτηση...</div>
+          <div id="sp-empty">Δεν βρέθηκαν αποτελέσματα.</div>
+          <div id="sp-results-wrap"></div>
+
+        </div>
+      </div>
+
+      <%= link_to "+ Νέα Ανάρτηση", new_post_path, class: "btn-new-post" %>
+    </div>
+  </div>
+
+  <% if @posts.any? %>
+    <% @posts.each do |post| %>
+      <div class="post-card">
+        <div class="post-meta">
+          <div class="user-avatar">👤</div>
+          <div class="meta-info">
+            <h3><%= post.user&.username || post.user&.email&.split('@')&.first || "Χρήστης" %></h3>
+            <span><%= post.created_at.strftime("%d %b %Y, %H:%M") %></span>
+          </div>
+        </div>
+        <h2 class="post-title"><%= post.title %></h2>
+        <div class="post-content"><%= truncate(post.content, length: 300) %></div>
+        <div class="post-actions">
+          <%= link_to "Προβολή", post_path(post), class: "action-link" %>
+          <% if post.user == current_user %>
+            <%= link_to "Επεξεργασία", edit_post_path(post), class: "action-link" %>
+            <%= link_to "Διαγραφή", post_path(post), data: { turbo_method: :delete, turbo_confirm: "Είσαι σίγουρος;" }, class: "action-link", style: "color: #f02849;" %>
+          <% else %>
+            <% if current_user.friend_users.include?(post.user) %>
+              <span class="action-link" style="color: #28a745; cursor: default;"> Επαφή</span>
+            <% else %>
+              <%= button_to contacts_path(contact_id: post.user.id), method: :post, class: "action-link",
+                  style: "background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; color: #1877f2;" do %>
+                <span>+ Προσθήκη στις επαφές</span>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="empty-state"><p>Δεν υπάρχουν ακόμη αναρτήσεις.</p></div>
+  <% end %>
+</div>
+
+<script>
+  function toggleSearchPanel() {
+    const panel = document.getElementById('search-posts-panel');
+    const btn   = document.getElementById('search-posts-btn');
+    panel.classList.toggle('open');
+    btn.classList.toggle('active', panel.classList.contains('open'));
+  }
+
+  document.addEventListener('click', function(e) {
+    const wrap = document.querySelector('.search-posts-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('search-posts-panel')?.classList.remove('open');
+      document.getElementById('search-posts-btn')?.classList.remove('active');
+    }
+  });
+
+  function toggleSpChip(chip) {
+    if (chip.dataset.uid === 'all') {
+      document.querySelectorAll('.sp-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+    } else {
+      document.querySelector('.sp-chip[data-uid="all"]')?.classList.remove('selected');
+      chip.classList.toggle('selected');
+      if (!document.querySelectorAll('.sp-chip:not([data-uid="all"]).selected').length) {
+        document.querySelector('.sp-chip[data-uid="all"]')?.classList.add('selected');
+      }
+    }
+  }
+
+  function getSpUids() {
+    if (document.querySelector('.sp-chip[data-uid="all"]')?.classList.contains('selected')) return [];
+    return Array.from(document.querySelectorAll('.sp-chip:not([data-uid="all"]).selected')).map(c => c.dataset.uid);
+  }
+
+  function runPostSearch() {
+    const keyword  = document.getElementById('sp-keyword').value.trim();
+    const category = document.getElementById('sp-category').value;
+    const sort     = document.getElementById('sp-sort').value;
+    const uids     = getSpUids();
+
+    const loading = document.getElementById('sp-loading');
+    const empty   = document.getElementById('sp-empty');
+    const wrap    = document.getElementById('sp-results-wrap');
+
+    loading.style.display = 'block';
+    empty.style.display   = 'none';
+    wrap.innerHTML        = '';
+
+    const params = new URLSearchParams();
+    if (keyword)  params.set('q', keyword);
+    if (category) params.set('category', category);
+    if (sort)     params.set('sort', sort);
+    uids.forEach(id => params.append('user_ids[]', id));
+
+    fetch('/posts/search?' + params.toString(), {
+      headers: { 'Accept': 'application/json', 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content }
+    })
+    .then(r => r.json())
+    .then(data => {
+      loading.style.display = 'none';
+      if (!data || data.length === 0) { empty.style.display = 'block'; return; }
+
+      const groups = {};
+      data.forEach(p => { const c = p.post_type || 'Άλλο'; (groups[c] = groups[c] || []).push(p); });
+
+      Object.entries(groups).forEach(([cat, posts]) => {
+        const h = document.createElement('div');
+        h.className = 'sp-cat-header';
+        h.innerHTML = `📂 ${esc(cat)} <span class="sp-count">${posts.length}</span>`;
+        wrap.appendChild(h);
+        posts.forEach(p => {
+          const a = document.createElement('a');
+          a.className = 'sp-card';
+          a.href = `/posts/${p.id}`;
+          a.innerHTML = `
+            <div class="sp-card-icon">📄</div>
+            <div class="sp-card-body">
+              <div class="sp-card-author">${esc(p.author_name || 'Χρήστης')}</div>
+              <div class="sp-card-snippet">${esc(p.body || p.title || '')}</div>
+              <div class="sp-card-time">${p.created_at || ''}</div>
+            </div>
+            <div class="sp-tag">${esc(p.post_type || 'Άλλο')}</div>
+          `;
+          wrap.appendChild(a);
+        });
+      });
+    })
+    .catch(() => {
+      loading.style.display = 'none';
+      empty.style.display   = 'block';
+      empty.textContent     = 'Σφάλμα. Δοκιμάστε ξανά.';
+    });
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>

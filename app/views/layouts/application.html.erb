@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Portal</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= action_cable_meta_tag %>
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+  
+  <style>
+   
+    .portal-logo-btn {
+      background-color: #0084ff;
+      color: white !important;
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 800;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: inline-block;
+      box-shadow: 0 2px 8px rgba(0, 132, 255, 0.3);
+    }
+    .portal-logo-btn:hover {
+      background-color: #0073e6;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 132, 255, 0.4);
+    }
+    body { margin:0; background:#f0f2f5; font-family: -apple-system, sans-serif; }
+    .top-nav { background: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .logout-btn { color: #dc3545; text-decoration: none; font-weight: bold; font-size: 14px; padding: 5px 12px; border: 1px solid #dc3545; border-radius: 5px; background: none; cursor: pointer; }
+    
+    #chat-window { display:none; position:fixed; bottom:0; right:20px; width:360px; height:520px; background:white; border-radius:12px 12px 0 0; box-shadow:0 8px 30px rgba(0,0,0,0.2); z-index:1000; flex-direction:column; overflow:hidden; }
+    .chat-header { background:#0084ff; color:white; padding:12px; display:flex; justify-content:space-between; align-items:center; font-weight:bold; }
+    #convo-list-view { flex:1; overflow-y:auto; background:white; }
+    #msg-view { display:none; flex:1; flex-direction:column; overflow:hidden; }
+    
+    
+    #unknown-contact-bar { display:none; background:#fff9c4; padding:10px; border-bottom:1px solid #fbc02d; text-align:center; font-size:12px; color: #856404; }
+    
+    .contact-row { display:flex; align-items:center; padding:12px; border-bottom:1px solid #f0f2f5; cursor:pointer; }
+    .avatar { width:35px; height:35px; background:#e7f3ff; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:12px; font-size:16px; }
+    #chat-messages { flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:8px; background:#fff; }
+    .msg { padding:8px 12px; border-radius:18px; font-size:14px; max-width:80%; word-wrap:break-word; position: relative; }
+    .msg.mine { align-self:flex-end; background:#0084ff; color:white; }
+    .msg.theirs { align-self:flex-start; background:#e4e6eb; color:black; }
+    .msg-time { font-size:9px; opacity:0.5; text-align:right; margin-top:3px; }
+    .input-area { padding:12px; border-top:1px solid #eee; display:flex; gap:8px; }
+    #chat-input { flex:1; border:none; background:#f0f2f5; padding:10px 15px; border-radius:20px; outline:none; }
+    #chat-toggle-btn { position:fixed; bottom:20px; right:20px; width:60px; height:60px; border-radius:50%; background:#0084ff; color:white; border:none; cursor:pointer; font-size:28px; z-index:999; box-shadow:0 4px 15px rgba(0,0,0,0.2); }
+    .group-bar { display:none; padding:10px; background:#e7f3ff; border-bottom:1px solid #cce4ff; justify-content:space-between; align-items:center; font-size:12px; }
+  </style>
+</head>
+
+<body>
+  <nav class="top-nav">
+    <div class="nav-left">
+      <a href="/" class="portal-logo-btn">Portal</a>
+    </div>
+    
+    <div class="nav-right" style="display: flex; align-items: center; gap: 20px;">
+      <% if user_signed_in? %>
+      <%= turbo_stream_from current_user, :notifications %>
+       <a href="/notifications" style="text-decoration: none; position: relative; font-size: 22px;">
+  🔔
+  <%= render "shared/notification_badge", count: current_user.notifications.unread.count %>
+</a>
+
+       <%= link_to "Αποσύνδεση", destroy_user_session_path, class: "logout-btn", data: { turbo: "false" } %>
+      <% end %>
+    </div>
+  </nav>
+
+  <%= yield %>
+
+  <% if user_signed_in? %>
+    <button id="chat-toggle-btn" onclick="toggleChat()">💬</button>
+
+    <div id="chat-window">
+      <div class="chat-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span id="chat-back" onclick="showList()" style="display:none; cursor:pointer;">←</span>
+          <span id="chat-title">Συνομιλίες</span>
+        </div>
+        <span onclick="toggleChat()" style="cursor:pointer; font-size:20px;">×</span>
+      </div>
+
+      <div id="group-bar" class="group-bar">
+        <span id="selected-count">0 άτομα</span>
+        <button onclick="startGroupChat()" style="background:#0084ff; color:white; border:none; padding:5px 10px; border-radius:12px; cursor:pointer;">Δημιουργία</button>
+      </div>
+
+      <div id="convo-list-view">
+        <div style="padding:10px; font-size:11px; color:#888; font-weight:bold; background:#f8f9fa; display:flex; justify-content:space-between;">
+          ΠΡΟΣΦΑΤΕΣ <span onclick="toggleGroupMode()" style="color:#0084ff; cursor:pointer;">+ Νέα Ομάδα</span>
+        </div>
+        <div id="recent-convos"></div>
+        
+        <div style="padding:10px; font-size:11px; color:#888; font-weight:bold; background:#f8f9fa; border-top:1px solid #eee;">ΟΙ ΕΠΑΦΕΣ ΜΟΥ</div>
+        <div id="my-contacts-list">
+          <% current_user.friend_users.each do |u| %>
+            <div class="contact-row" data-user-id="<%= u.id %>" onclick="handleContactClick(event, '<%= u.id %>', '<%= u.username || u.email.split('@').first %>')">
+              <input type="checkbox" class="group-checkbox" value="<%= u.id %>" style="display:none; margin-right:10px;" onclick="event.stopPropagation(); updateGroupCount();">
+              <div class="avatar">👤</div>
+              <span><%= u.username || u.email.split('@').first %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <div id="msg-view">
+        <div id="unknown-contact-bar">
+          <span>Δεν είναι στις επαφές σας.</span>
+          <button onclick="addContactFromChat()" style="background:#0084ff; color:white; border:none; padding:3px 8px; border-radius:10px; cursor:pointer; margin-left:5px; font-weight:bold;">Προσθήκη</button>
+        </div>
+        <div id="chat-messages"></div>
+        <div class="input-area">
+          <input type="text" id="chat-input" placeholder="Aa" autocomplete="off">
+          <input type="hidden" id="active-ids">
+          <button onclick="sendMsg()" style="border:none; background:none; color:#0084ff; font-weight:bold; cursor:pointer;">Στείλε</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@rails/actioncable@7.0.0/app/assets/javascripts/actioncable.js"></script>
+    <script>
+      const currentUserId = <%= current_user.id %>;
+      let chatSub = null;
+
+      function connectCable() {
+  if (chatSub) return;
+  chatSub = ActionCable.createConsumer().subscriptions.create("ChatChannel", {
+    received(data) {
+      // 1. Έλεγχος αν ο χρήστης συμμετέχει σε αυτή τη συνομιλία
+      if (data.all_participant_ids.includes(currentUserId)) {
+        
+        // Βρίσκουμε ποιο chat έχει ανοιχτό ο χρήστης αυτή τη στιγμή
+        const activeIds = document.getElementById('active-ids').value;
+        const chatVisible = document.getElementById('chat-window').style.display === 'flex';
+        const msgViewVisible = document.getElementById('msg-view').style.display === 'flex';
+
+        // Δημιουργούμε το μοναδικό κλειδί του ανοιχτού chat 
+        const currentKey = [currentUserId, ...activeIds.split(',')].filter(x => x).map(Number).sort().join(',');
+
+       
+        if (chatVisible && msgViewVisible && data.group_key === currentKey) {
+          addBubble(data.body, data.sender_id === currentUserId, data.time, data.sender_name);
+        }
+
+        
+        loadRecent();
+      }
+    }
+  });
+}
+
+      function toggleChat() {
+        const win = document.getElementById('chat-window');
+        win.style.display = (win.style.display === 'flex' ? 'none' : 'flex');
+        if (win.style.display === 'flex' && document.getElementById('convo-list-view').style.display !== 'none') {
+          showList();
+        }
+      }
+
+      function showList() {
+        document.getElementById('convo-list-view').style.display = 'block';
+        document.getElementById('msg-view').style.display = 'none';
+        document.getElementById('chat-back').style.display = 'none';
+        document.getElementById('group-bar').style.display = 'none';
+        document.getElementById('chat-title').innerText = "Συνομιλίες";
+        loadRecent();
+      }
+
+      function startChat(ids, name) {
+        document.getElementById('convo-list-view').style.display = 'none';
+        document.getElementById('msg-view').style.display = 'flex';
+        document.getElementById('chat-back').style.display = 'inline';
+        document.getElementById('chat-title').innerText = name;
+        document.getElementById('active-ids').value = ids;
+
+        fetch('/messages/' + ids).then(r => r.json()).then(data => {
+          const container = document.getElementById('chat-messages');
+          const bar = document.getElementById('unknown-contact-bar');
+          container.innerHTML = '';
+          
+          // ΔΙΟΡΘΩΣΗ: Χρήση του is_contact από τον Controller
+          if (!data.is_contact && !ids.toString().includes(',')) {
+            bar.style.display = 'block';
+          } else {
+            bar.style.display = 'none';
+          }
+
+          const msgs = data.messages || data;
+          msgs.forEach(m => addBubble(m.body, m.is_mine, m.time, m.sender_name));
+          container.scrollTop = container.scrollHeight;
+        });
+      }
+
+      function addContactFromChat() {
+        const id = document.getElementById('active-ids').value;
+        const name = document.getElementById('chat-title').innerText;
+
+        fetch('/contacts', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content 
+          },
+          body: JSON.stringify({ contact_id: id })
+        }).then(res => {
+          if (res.ok) {
+            document.getElementById('unknown-contact-bar').style.display = 'none';
+            const list = document.getElementById('my-contacts-list');
+            if (list && !document.querySelector(`#my-contacts-list [data-user-id="${id}"]`)) {
+              const row = document.createElement('div');
+              row.className = "contact-row";
+              row.setAttribute('data-user-id', id);
+              row.onclick = (e) => handleContactClick(e, id, name);
+              row.innerHTML = `<div class="avatar">👤</div><span>${name}</span>`;
+              list.appendChild(row);
+            }
+          }
+        });
+      }
+
+      function addBubble(body, isMine, time, sender) {
+        const container = document.getElementById('chat-messages');
+        const div = document.createElement('div');
+        div.className = `msg ${isMine ? 'mine' : 'theirs'}`;
+        div.innerHTML = (isMine ? '' : `<div style="font-size:10px; font-weight:bold; opacity:0.7;">${sender}</div>`) + 
+                        `<div>${body}</div><div class="msg-time">${time}</div>`;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+      }
+
+      function sendMsg() {
+        const input = document.getElementById('chat-input');
+        const ids = document.getElementById('active-ids').value;
+        if (!input.value.trim() || !ids) return;
+
+        fetch('/messages', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content 
+          },
+          body: JSON.stringify({ body: input.value, recipient_ids: ids.split(',').map(Number) })
+        });
+        input.value = '';
+      }
+
+      function loadRecent() {
+        fetch('/messages').then(r => r.json()).then(data => {
+          const container = document.getElementById('recent-convos');
+          container.innerHTML = '';
+          data.forEach(c => {
+            const div = document.createElement('div');
+            div.className = "contact-row";
+            div.innerHTML = `<div class="avatar">${c.is_group ? '👥' : '👤'}</div>
+                             <div style="flex:1;"><strong>${c.name}</strong><div style="font-size:11px; color:#888;">${c.last_message}</div></div>`;
+            div.onclick = () => startChat(c.id, c.name);
+            container.appendChild(div);
+          });
+        });
+      }
+
+      function toggleGroupMode() {
+  const bar = document.getElementById('group-bar');
+  const cbs = document.querySelectorAll('.group-checkbox');
+  const isVisible = (bar.style.display === 'flex');
+  
+  if (isVisible) {
+    // Αν το κλείνουμε, ξετσέκαρε τα πάντα
+    cbs.forEach(cb => { cb.checked = false; cb.style.display = 'none'; });
+    bar.style.display = 'none';
+  } else {
+    // Αν το ανοίγουμε
+    cbs.forEach(cb => cb.style.display = 'inline-block');
+    bar.style.display = 'flex';
+    updateGroupCount();
+  }
+}
+
+      function handleContactClick(e, id, name) {
+        const cb = e.currentTarget.querySelector('.group-checkbox');
+        if (cb && cb.style.display !== 'none') {
+          cb.checked = !cb.checked;
+          updateGroupCount();
+        } else {
+          startChat(id, name);
+        }
+      }
+
+      function updateGroupCount() {
+        const count = document.querySelectorAll('.group-checkbox:checked').length;
+        document.getElementById('selected-count').innerText = (count > 0 ? count + 1 : 0) + " άτομα";
+      }
+
+      function startGroupChat() {
+  const selectedCheckboxes = Array.from(document.querySelectorAll('.group-checkbox:checked'));
+  
+  if (selectedCheckboxes.length > 0) {
+    // Παίρνουμε τα IDs και φτιάχνουμε το όνομα της ομάδας
+    const ids = selectedCheckboxes.map(cb => cb.value).join(',');
+    const groupName = "Ομάδα (" + (selectedCheckboxes.length + 1) + " άτομα)";
+
+    // 1. Κλείνουμε το Group Mode και εξαφανίζουμε το κουμπί "Δημιουργία"
+    toggleGroupMode(); 
+
+    // 2. Ξεκινάμε το Chat κατευθείαν (αυτό θα ανοίξει το msg-view και θα φορτώσει το (κενό) ιστορικό)
+    startChat(ids, groupName);
+    
+    // 3. Καθαρίζουμε το input για να είναι έτοιμο για το πρώτο μήνυμα
+    document.getElementById('chat-input').value = '';
+    document.getElementById('chat-input').focus();
+  } else {
+    alert("Παρακαλώ επιλέξτε τουλάχιστον έναν χρήστη.");
+  }
+}
+
+      document.addEventListener("DOMContentLoaded", connectCable);
+      document.addEventListener("turbo:load", connectCable);
+      document.addEventListener("keydown", (e) => { if (e.target.id === 'chat-input' && e.key === 'Enter') sendMsg(); });
+    </script>
+  <% end %>
+</body>
+</html>

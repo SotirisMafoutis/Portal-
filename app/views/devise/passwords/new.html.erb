@@ -1,0 +1,34 @@
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh; background-color: #f0f2f5; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  
+  <div style="background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center;">
+    
+    <%# Icon Area (Προαιρετικό, δίνει στυλ) %>
+    <div style="font-size: 50px; margin-bottom: 20px; color: #0084ff;"></div>
+
+    <h2 style="margin-bottom: 10px; color: #1c1e21; font-size: 24px; font-weight: 800;">Ξεχάσατε τον κωδικό σας;</h2>
+    <p style="color: #606770; margin-bottom: 30px; font-size: 14px; line-height: 1.5;">
+      Εισάγετε το email σας και θα σας στείλουμε οδηγίες για να δημιουργήσετε έναν νέο κωδικό.
+    </p>
+
+    <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <%# Email Field %>
+      <div style="margin-bottom: 20px; text-align: left;">
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "Διεύθυνση Email", 
+            style: "width: 100%; padding: 14px; border: 1px solid #dddfe2; border-radius: 8px; font-size: 16px; box-sizing: border-box; outline: none;" %>
+      </div>
+
+      <%# Submit Button %>
+      <div style="margin-bottom: 20px;">
+        <%= f.submit "Αποστολή οδηγιών", 
+            style: "width: 100%; padding: 14px; background-color: #0084ff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.3s;" %>
+      </div>
+    <% end %>
+
+    <div style="margin-top: 25px; border-top: 1px solid #f0f2f5; padding-top: 20px;">
+      <%= link_to "Επιστροφή στη Σύνδεση", new_session_path(resource_name), style: "text-decoration: none; color: #0084ff; font-weight: 600; font-size: 14px;" %>
+    </div>
+
+  </div>
+</div>

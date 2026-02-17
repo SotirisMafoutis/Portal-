@@ -1,0 +1,962 @@
+<%# ============================================================
+    PARTIAL: _search_posts.html.erb
+    Χρήση: βάλτο ΑΜΕΣΩΣ μετά το κουμπί "Νέα Ανάρτηση" στο view σας
+    
+    Παράδειγμα χρήσης:
+      <%= render 'search_posts' %>
+    
+    Απαιτεί route:  GET /posts/search  (δείτε παρακάτω)
+    ============================================================ %>
+
+<style>
+  /* ── Search Bar Row ── */
+  .search-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* Κουμπί αναζήτησης – ίδιο ύψος με "Νέα Ανάρτηση" */
+  #search-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    color: #0084ff;
+    border: 1.5px solid #0084ff;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 7px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+    font-family: -apple-system, sans-serif;
+  }
+  #search-toggle-btn:hover {
+    background: #0084ff;
+    color: #fff;
+  }
+  #search-toggle-btn svg {
+    transition: transform 0.2s;
+  }
+  #search-toggle-btn.active svg {
+    transform: rotate(45deg);
+  }
+
+  /* ── Expandable Panel ── */
+  #search-panel {
+    display: none;
+    background: #fff;
+    border-radius: 12px;<%# ============================================================
+    PARTIAL: _search_posts.html.erb
+    Χρήση: βάλτο ΑΜΕΣΩΣ μετά το κουμπί "Νέα Ανάρτηση" στο view σας
+    
+    Παράδειγμα χρήσης:
+      <%= render 'search_posts' %>
+    
+    Απαιτεί route:  GET /posts/search  (δείτε παρακάτω)
+    ============================================================ %>
+
+<style>
+  /* ── Search Bar Row ── */
+  .search-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* Κουμπί αναζήτησης – ίδιο ύψος με "Νέα Ανάρτηση" */
+  #search-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    color: #0084ff;
+    border: 1.5px solid #0084ff;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 7px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+    font-family: -apple-system, sans-serif;
+  }
+  #search-toggle-btn:hover {
+    background: #0084ff;
+    color: #fff;
+  }
+  #search-toggle-btn svg {
+    transition: transform 0.2s;
+  }
+  #search-toggle-btn.active svg {
+    transform: rotate(45deg);
+  }
+
+  /* ── Expandable Panel ── */
+  #search-panel {
+    display: none;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    padding: 18px 20px 14px;
+    margin-top: 10px;
+    animation: slideDown 0.22s ease;
+  }
+  #search-panel.open { display: block; }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Search Input Row ── */
+  .sp-input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  #sp-keyword {
+    flex: 1;
+    border: 1.5px solid #e4e6eb;
+    border-radius: 20px;
+    padding: 9px 16px;
+    font-size: 14px;
+    outline: none;
+    font-family: -apple-system, sans-serif;
+    transition: border-color 0.15s;
+  }
+  #sp-keyword:focus { border-color: #0084ff; }
+
+  #sp-search-btn {
+    background: #0084ff;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 9px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: -apple-system, sans-serif;
+  }
+  #sp-search-btn:hover { background: #0073e6; }
+
+  /* ── Filters Row ── */
+  .sp-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .sp-filters label {
+    font-size: 12px;
+    color: #65676b;
+    font-weight: 600;
+    margin-right: 2px;
+  }
+  .sp-select {
+    border: 1.5px solid #e4e6eb;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 13px;
+    outline: none;
+    background: #f0f2f5;
+    cursor: pointer;
+    font-family: -apple-system, sans-serif;
+    transition: border-color 0.15s;
+  }
+  .sp-select:focus { border-color: #0084ff; }
+
+  /* ── User Chips (πολλαπλοί χρήστες) ── */
+  .sp-users-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .sp-users-row label {
+    font-size: 12px;
+    color: #65676b;
+    font-weight: 600;
+  }
+  .user-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #e7f3ff;
+    color: #0084ff;
+    border: 1px solid #cce4ff;
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .user-chip:hover { background: #d0e8ff; }
+  .user-chip.selected {
+    background: #0084ff;
+    color: #fff;
+    border-color: #0084ff;
+  }
+  .user-chip .chip-avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+  }
+
+  /* ── Results Area ── */
+  #sp-results-area {
+    display: none;
+    margin-top: 14px;
+    border-top: 1px solid #f0f2f5;
+    padding-top: 12px;
+  }
+  #sp-results-area.visible { display: block; }
+
+  .sp-category-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #65676b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 12px 0 6px;
+  }
+  .sp-category-header span {
+    background: #e4e6eb;
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 11px;
+    color: #444;
+  }
+
+  .sp-post-card {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.12s;
+    text-decoration: none;
+    color: inherit;
+  }
+  .sp-post-card:hover { background: #f0f2f5; }
+
+  .sp-post-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #e7f3ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .sp-post-body { flex: 1; min-width: 0; }
+  .sp-post-author {
+    font-size: 13px;
+    font-weight: 700;
+    color: #050505;
+  }
+  .sp-post-snippet {
+    font-size: 12px;
+    color: #65676b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+  }
+  .sp-post-meta {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 2px;
+  }
+  .sp-badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+  .sp-badge.photo { background:#fff3cd; color:#856404; }
+  .sp-badge.video { background:#d4edda; color:#155724; }
+  .sp-badge.text  { background:#e7f3ff; color:#004085; }
+  .sp-badge.link  { background:#f8d7da; color:#721c24; }
+
+  #sp-empty {
+    text-align: center;
+    padding: 20px;
+    color: #65676b;
+    font-size: 14px;
+    display: none;
+  }
+  #sp-loading {
+    text-align: center;
+    padding: 16px;
+    color: #0084ff;
+    font-size: 13px;
+    display: none;
+  }
+  .sp-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #cce4ff;
+    border-top-color: #0084ff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<%# ── Κουμπί Toggle ── %>
+<button id="search-toggle-btn" onclick="toggleSearchPanel()" type="button">
+  <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+    <circle cx="9" cy="9" r="7"/><line x1="14.5" y1="14.5" x2="19" y2="19"/>
+  </svg>
+  Αναζήτηση Posts
+</button>
+
+<%# ── Expandable Panel ── %>
+<div id="search-panel">
+
+  <%# Input row %>
+  <div class="sp-input-row">
+    <input type="text" id="sp-keyword"
+           placeholder="Αναζήτηση λέξης-κλειδί..."
+           onkeydown="if(event.key==='Enter') runSearch()">
+    <button id="sp-search-btn" onclick="runSearch()" type="button">Αναζήτηση</button>
+  </div>
+
+  <%# Φίλτρα %>
+  <div class="sp-filters">
+    <label>Κατηγορία:</label>
+    <select id="sp-category" class="sp-select">
+      <option value="">Όλες</option>
+      <option value="text">📝 Κείμενο</option>
+      <option value="photo">📷 Φωτογραφία</option>
+      <option value="video">🎬 Βίντεο</option>
+      <option value="link">🔗 Σύνδεσμος</option>
+    </select>
+
+    <label style="margin-left:8px;">Ταξινόμηση:</label>
+    <select id="sp-sort" class="sp-select">
+      <option value="newest">Νεότερα πρώτα</option>
+      <option value="oldest">Παλαιότερα πρώτα</option>
+      <option value="popular">Πιο δημοφιλή</option>
+    </select>
+  </div>
+
+  <%# Πολλαπλοί χρήστες %>
+  <div class="sp-users-row" id="sp-users-row">
+    <label>👤 Χρήστης:</label>
+    <%# Chip "Όλοι" %>
+    <div class="user-chip selected" data-uid="all" onclick="toggleUserChip(this)">
+      <div class="chip-avatar">🌐</div>
+      Όλοι
+    </div>
+    <%# Ένα chip ανά φίλο %>
+    <% current_user.friend_users.each do |u| %>
+      <div class="user-chip" data-uid="<%= u.id %>" onclick="toggleUserChip(this)">
+        <div class="chip-avatar">👤</div>
+        <%= u.username || u.email.split('@').first %>
+      </div>
+    <% end %>
+    <%# Chip για τον ίδιο τον χρήστη %>
+    <div class="user-chip" data-uid="<%= current_user.id %>" onclick="toggleUserChip(this)">
+      <div class="chip-avatar">⭐</div>
+      Εγώ
+    </div>
+  </div>
+
+  <%# Loading & Empty states %>
+  <div id="sp-loading"><span class="sp-spinner"></span>Αναζήτηση...</div>
+  <div id="sp-empty">Δεν βρέθηκαν αποτελέσματα.</div>
+
+  <%# Results %>
+  <div id="sp-results-area"></div>
+</div>
+
+<script>
+// ── Toggle panel ──────────────────────────────────────────────
+function toggleSearchPanel() {
+  const panel = document.getElementById('search-panel');
+  const btn   = document.getElementById('search-toggle-btn');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  btn.classList.toggle('active', !isOpen);
+}
+
+// ── User chip multi-select ────────────────────────────────────
+function toggleUserChip(chip) {
+  const uid = chip.dataset.uid;
+  if (uid === 'all') {
+    // Αν πατήσουμε "Όλοι", αποεπιλέγουμε τους υπόλοιπους
+    document.querySelectorAll('.user-chip').forEach(c => c.classList.remove('selected'));
+    chip.classList.add('selected');
+  } else {
+    // Αποεπιλέγουμε το "Όλοι"
+    const allChip = document.querySelector('.user-chip[data-uid="all"]');
+    if (allChip) allChip.classList.remove('selected');
+    chip.classList.toggle('selected');
+    // Αν κανείς δεν επιλεγεί, ξαναβάζουμε το "Όλοι"
+    const anySelected = document.querySelectorAll('.user-chip:not([data-uid="all"]).selected').length > 0;
+    if (!anySelected && allChip) allChip.classList.add('selected');
+  }
+}
+
+// ── Συλλογή επιλεγμένων UIDs ─────────────────────────────────
+function getSelectedUids() {
+  const allChip = document.querySelector('.user-chip[data-uid="all"]');
+  if (allChip && allChip.classList.contains('selected')) return [];
+  return Array.from(document.querySelectorAll('.user-chip:not([data-uid="all"]).selected'))
+              .map(c => c.dataset.uid);
+}
+
+// ── Εικονίδιο κατηγορίας ─────────────────────────────────────
+function categoryIcon(type) {
+  return { photo:'📷', video:'🎬', text:'📝', link:'🔗' }[type] || '📄';
+}
+
+// ── Κύρια αναζήτηση ──────────────────────────────────────────
+function runSearch() {
+  const keyword  = document.getElementById('sp-keyword').value.trim();
+  const category = document.getElementById('sp-category').value;
+  const sort     = document.getElementById('sp-sort').value;
+  const uids     = getSelectedUids();
+
+  const loading  = document.getElementById('sp-loading');
+  const empty    = document.getElementById('sp-empty');
+  const results  = document.getElementById('sp-results-area');
+
+  loading.style.display = 'block';
+  empty.style.display   = 'none';
+  results.classList.remove('visible');
+  results.innerHTML = '';
+
+  // Χτίζουμε query params
+  const params = new URLSearchParams();
+  if (keyword)  params.set('q',        keyword);
+  if (category) params.set('category', category);
+  if (sort)     params.set('sort',     sort);
+  uids.forEach(id => params.append('user_ids[]', id));
+
+  fetch('/posts/search?' + params.toString(), {
+    headers: {
+      'Accept': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    }
+  })
+  .then(r => r.json())
+  .then(data => {
+    loading.style.display = 'none';
+
+    if (!data || data.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
+
+    // ── Ομαδοποίηση ανά κατηγορία ──
+    const groups = {};
+    data.forEach(post => {
+      const cat = post.post_type || 'text';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(post);
+    });
+
+    // ── Rendering ──
+    const categoryLabels = {
+      text:  '📝 Κείμενο',
+      photo: '📷 Φωτογραφία',
+      video: '🎬 Βίντεο',
+      link:  '🔗 Σύνδεσμος'
+    };
+
+    Object.entries(groups).forEach(([cat, posts]) => {
+      const header = document.createElement('div');
+      header.className = 'sp-category-header';
+      header.innerHTML = `${categoryLabels[cat] || cat} <span>${posts.length}</span>`;
+      results.appendChild(header);
+
+      posts.forEach(post => {
+        const card = document.createElement('a');
+        card.className  = 'sp-post-card';
+        card.href       = `/posts/${post.id}`;
+        card.innerHTML  = `
+          <div class="sp-post-avatar">${categoryIcon(cat)}</div>
+          <div class="sp-post-body">
+            <div class="sp-post-author">${escHtml(post.author_name || 'Χρήστης')}</div>
+            <div class="sp-post-snippet">${escHtml(post.body || post.title || '')}</div>
+            <div class="sp-post-meta">${post.created_at || ''}</div>
+          </div>
+          <div class="sp-badge ${cat}">${categoryLabels[cat] || cat}</div>
+        `;
+        results.appendChild(card);
+      });
+    });
+
+    results.classList.add('visible');
+  })
+  .catch(() => {
+    loading.style.display = 'none';
+    empty.style.display   = 'block';
+    empty.textContent     = 'Σφάλμα κατά την αναζήτηση. Δοκιμάστε ξανά.';
+  });
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+
+    box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+    padding: 18px 20px 14px;
+    margin-top: 10px;
+    animation: slideDown 0.22s ease;
+  }
+  #search-panel.open { display: block; }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Search Input Row ── */
+  .sp-input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  #sp-keyword {
+    flex: 1;
+    border: 1.5px solid #e4e6eb;
+    border-radius: 20px;
+    padding: 9px 16px;
+    font-size: 14px;
+    outline: none;
+    font-family: -apple-system, sans-serif;
+    transition: border-color 0.15s;
+  }
+  #sp-keyword:focus { border-color: #0084ff; }
+
+  #sp-search-btn {
+    background: #0084ff;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 9px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: -apple-system, sans-serif;
+  }
+  #sp-search-btn:hover { background: #0073e6; }
+
+  /* ── Filters Row ── */
+  .sp-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+  .sp-filters label {
+    font-size: 12px;
+    color: #65676b;
+    font-weight: 600;
+    margin-right: 2px;
+  }
+  .sp-select {
+    border: 1.5px solid #e4e6eb;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 13px;
+    outline: none;
+    background: #f0f2f5;
+    cursor: pointer;
+    font-family: -apple-system, sans-serif;
+    transition: border-color 0.15s;
+  }
+  .sp-select:focus { border-color: #0084ff; }
+
+  /* ── User Chips (πολλαπλοί χρήστες) ── */
+  .sp-users-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .sp-users-row label {
+    font-size: 12px;
+    color: #65676b;
+    font-weight: 600;
+  }
+  .user-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #e7f3ff;
+    color: #0084ff;
+    border: 1px solid #cce4ff;
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .user-chip:hover { background: #d0e8ff; }
+  .user-chip.selected {
+    background: #0084ff;
+    color: #fff;
+    border-color: #0084ff;
+  }
+  .user-chip .chip-avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+  }
+
+  /* ── Results Area ── */
+  #sp-results-area {
+    display: none;
+    margin-top: 14px;
+    border-top: 1px solid #f0f2f5;
+    padding-top: 12px;
+  }
+  #sp-results-area.visible { display: block; }
+
+  .sp-category-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #65676b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 12px 0 6px;
+  }
+  .sp-category-header span {
+    background: #e4e6eb;
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 11px;
+    color: #444;
+  }
+
+  .sp-post-card {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.12s;
+    text-decoration: none;
+    color: inherit;
+  }
+  .sp-post-card:hover { background: #f0f2f5; }
+
+  .sp-post-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #e7f3ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .sp-post-body { flex: 1; min-width: 0; }
+  .sp-post-author {
+    font-size: 13px;
+    font-weight: 700;
+    color: #050505;
+  }
+  .sp-post-snippet {
+    font-size: 12px;
+    color: #65676b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+  }
+  .sp-post-meta {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 2px;
+  }
+  .sp-badge {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 4px;
+  }
+  .sp-badge.photo { background:#fff3cd; color:#856404; }
+  .sp-badge.video { background:#d4edda; color:#155724; }
+  .sp-badge.text  { background:#e7f3ff; color:#004085; }
+  .sp-badge.link  { background:#f8d7da; color:#721c24; }
+
+  #sp-empty {
+    text-align: center;
+    padding: 20px;
+    color: #65676b;
+    font-size: 14px;
+    display: none;
+  }
+  #sp-loading {
+    text-align: center;
+    padding: 16px;
+    color: #0084ff;
+    font-size: 13px;
+    display: none;
+  }
+  .sp-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #cce4ff;
+    border-top-color: #0084ff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<%# ── Κουμπί Toggle ── %>
+<button id="search-toggle-btn" onclick="toggleSearchPanel()" type="button">
+  <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+    <circle cx="9" cy="9" r="7"/><line x1="14.5" y1="14.5" x2="19" y2="19"/>
+  </svg>
+  Αναζήτηση Posts
+</button>
+
+<%# ── Expandable Panel ── %>
+<div id="search-panel">
+
+  <%# Input row %>
+  <div class="sp-input-row">
+    <input type="text" id="sp-keyword"
+           placeholder="Αναζήτηση λέξης-κλειδί..."
+           onkeydown="if(event.key==='Enter') runSearch()">
+    <button id="sp-search-btn" onclick="runSearch()" type="button">Αναζήτηση</button>
+  </div>
+
+  <%# Φίλτρα %>
+  <div class="sp-filters">
+    <label>Κατηγορία:</label>
+    <select id="sp-category" class="sp-select">
+      <option value="">Όλες</option>
+      <option value="text">📝 Κείμενο</option>
+      <option value="photo">📷 Φωτογραφία</option>
+      <option value="video">🎬 Βίντεο</option>
+      <option value="link">🔗 Σύνδεσμος</option>
+    </select>
+
+    <label style="margin-left:8px;">Ταξινόμηση:</label>
+    <select id="sp-sort" class="sp-select">
+      <option value="newest">Νεότερα πρώτα</option>
+      <option value="oldest">Παλαιότερα πρώτα</option>
+      <option value="popular">Πιο δημοφιλή</option>
+    </select>
+  </div>
+
+  <%# Πολλαπλοί χρήστες %>
+  <div class="sp-users-row" id="sp-users-row">
+    <label>👤 Χρήστης:</label>
+    <%# Chip "Όλοι" %>
+    <div class="user-chip selected" data-uid="all" onclick="toggleUserChip(this)">
+      <div class="chip-avatar">🌐</div>
+      Όλοι
+    </div>
+    <%# Ένα chip ανά φίλο %>
+    <% current_user.friend_users.each do |u| %>
+      <div class="user-chip" data-uid="<%= u.id %>" onclick="toggleUserChip(this)">
+        <div class="chip-avatar">👤</div>
+        <%= u.username || u.email.split('@').first %>
+      </div>
+    <% end %>
+    <%# Chip για τον ίδιο τον χρήστη %>
+    <div class="user-chip" data-uid="<%= current_user.id %>" onclick="toggleUserChip(this)">
+      <div class="chip-avatar">⭐</div>
+      Εγώ
+    </div>
+  </div>
+
+  <%# Loading & Empty states %>
+  <div id="sp-loading"><span class="sp-spinner"></span>Αναζήτηση...</div>
+  <div id="sp-empty">Δεν βρέθηκαν αποτελέσματα.</div>
+
+  <%# Results %>
+  <div id="sp-results-area"></div>
+</div>
+
+<script>
+// ── Toggle panel ──────────────────────────────────────────────
+function toggleSearchPanel() {
+  const panel = document.getElementById('search-panel');
+  const btn   = document.getElementById('search-toggle-btn');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  btn.classList.toggle('active', !isOpen);
+}
+
+// ── User chip multi-select ────────────────────────────────────
+function toggleUserChip(chip) {
+  const uid = chip.dataset.uid;
+  if (uid === 'all') {
+    // Αν πατήσουμε "Όλοι", αποεπιλέγουμε τους υπόλοιπους
+    document.querySelectorAll('.user-chip').forEach(c => c.classList.remove('selected'));
+    chip.classList.add('selected');
+  } else {
+    // Αποεπιλέγουμε το "Όλοι"
+    const allChip = document.querySelector('.user-chip[data-uid="all"]');
+    if (allChip) allChip.classList.remove('selected');
+    chip.classList.toggle('selected');
+    // Αν κανείς δεν επιλεγεί, ξαναβάζουμε το "Όλοι"
+    const anySelected = document.querySelectorAll('.user-chip:not([data-uid="all"]).selected').length > 0;
+    if (!anySelected && allChip) allChip.classList.add('selected');
+  }
+}
+
+// ── Συλλογή επιλεγμένων UIDs ─────────────────────────────────
+function getSelectedUids() {
+  const allChip = document.querySelector('.user-chip[data-uid="all"]');
+  if (allChip && allChip.classList.contains('selected')) return [];
+  return Array.from(document.querySelectorAll('.user-chip:not([data-uid="all"]).selected'))
+              .map(c => c.dataset.uid);
+}
+
+// ── Εικονίδιο κατηγορίας ─────────────────────────────────────
+function categoryIcon(type) {
+  return { photo:'📷', video:'🎬', text:'📝', link:'🔗' }[type] || '📄';
+}
+
+// ── Κύρια αναζήτηση ──────────────────────────────────────────
+function runSearch() {
+  const keyword  = document.getElementById('sp-keyword').value.trim();
+  const category = document.getElementById('sp-category').value;
+  const sort     = document.getElementById('sp-sort').value;
+  const uids     = getSelectedUids();
+
+  const loading  = document.getElementById('sp-loading');
+  const empty    = document.getElementById('sp-empty');
+  const results  = document.getElementById('sp-results-area');
+
+  loading.style.display = 'block';
+  empty.style.display   = 'none';
+  results.classList.remove('visible');
+  results.innerHTML = '';
+
+  // Χτίζουμε query params
+  const params = new URLSearchParams();
+  if (keyword)  params.set('q',        keyword);
+  if (category) params.set('category', category);
+  if (sort)     params.set('sort',     sort);
+  uids.forEach(id => params.append('user_ids[]', id));
+
+  fetch('/posts/search?' + params.toString(), {
+    headers: {
+      'Accept': 'application/json',
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    }
+  })
+  .then(r => r.json())
+  .then(data => {
+    loading.style.display = 'none';
+
+    if (!data || data.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
+
+    // ── Ομαδοποίηση ανά κατηγορία ──
+    const groups = {};
+    data.forEach(post => {
+      const cat = post.post_type || 'text';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(post);
+    });
+
+    // ── Rendering ──
+    const categoryLabels = {
+      text:  '📝 Κείμενο',
+      photo: '📷 Φωτογραφία',
+      video: '🎬 Βίντεο',
+      link:  '🔗 Σύνδεσμος'
+    };
+
+    Object.entries(groups).forEach(([cat, posts]) => {
+      const header = document.createElement('div');
+      header.className = 'sp-category-header';
+      header.innerHTML = `${categoryLabels[cat] || cat} <span>${posts.length}</span>`;
+      results.appendChild(header);
+
+      posts.forEach(post => {
+        const card = document.createElement('a');
+        card.className  = 'sp-post-card';
+        card.href       = `/posts/${post.id}`;
+        card.innerHTML  = `
+          <div class="sp-post-avatar">${categoryIcon(cat)}</div>
+          <div class="sp-post-body">
+            <div class="sp-post-author">${escHtml(post.author_name || 'Χρήστης')}</div>
+            <div class="sp-post-snippet">${escHtml(post.body || post.title || '')}</div>
+            <div class="sp-post-meta">${post.created_at || ''}</div>
+          </div>
+          <div class="sp-badge ${cat}">${categoryLabels[cat] || cat}</div>
+        `;
+        results.appendChild(card);
+      });
+    });
+
+    results.classList.add('visible');
+  })
+  .catch(() => {
+    loading.style.display = 'none';
+    empty.style.display   = 'block';
+    empty.textContent     = 'Σφάλμα κατά την αναζήτηση. Δοκιμάστε ξανά.';
+  });
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>

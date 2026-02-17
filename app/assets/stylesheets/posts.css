@@ -1,0 +1,191 @@
+/* =========================
+   Base
+========================= */
+* {
+  box-sizing: border-box;
+}
+
+.page-wrapper {
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px at 20% -10%, #e9f1ff 0%, transparent 60%),
+    radial-gradient(800px at 90% 10%, #f3f6ff 0%, transparent 55%),
+    #f7f9fc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 56px 20px;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+}
+
+/* =========================
+   Card
+========================= */
+.main-card {
+  width: 100%;
+  max-width: 860px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  border-radius: 20px;
+  box-shadow:
+    0 30px 70px rgba(0,0,0,0.08),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+  overflow: hidden;
+}
+
+/* =========================
+   Header
+========================= */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 40px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.icon-box {
+  width: 66px;
+  height: 66px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #dbeafe, #eff6ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-titles h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.header-titles p {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* =========================
+   Form Body
+========================= */
+.form-body {
+  margin: 36px;
+  padding: 36px;
+  background: rgba(248,250,252,0.8);
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 30px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* =========================
+   Fields
+========================= */
+.field-row {
+  display: flex;
+  gap: 22px;
+  margin-bottom: 24px;
+}
+
+.field-row label {
+  width: 140px;
+  padding-top: 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+}
+
+/* Inputs */
+.styled-input,
+.styled-textarea {
+  width: 100%;
+  padding: 15px 18px;
+  font-size: 15px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.9);
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.styled-input::placeholder,
+.styled-textarea::placeholder {
+  color: #94a3b8;
+}
+
+.styled-input:focus,
+.styled-textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.15);
+}
+
+/* Textarea */
+.styled-textarea {
+  min-height: 340px;
+  resize: vertical;
+}
+
+/* =========================
+   Error
+========================= */
+.error-banner {
+  margin-top: 28px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(254,226,226,0.6);
+  border: 1px solid rgba(239,68,68,0.25);
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+/* =========================
+   Footer
+========================= */
+.card-footer {
+  padding: 32px 40px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+/* Buttons */
+.btn-cancel-new {
+  padding: 12px 30px;
+  border-radius: 999px;
+  background: rgba(148,163,184,0.15);
+  color: #475569;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.btn-cancel-new:hover {
+  background: rgba(148,163,184,0.25);
+}
+
+.btn-submit-new {
+  padding: 12px 42px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-submit-new:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(37,99,235,0.35);
+}

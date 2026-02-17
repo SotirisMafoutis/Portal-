@@ -1,0 +1,21 @@
+var chatContent = document.getElementById('chat-content');
+chatContent.innerHTML = ''; // Καθαρίζουμε το "Ξεκινήστε τη συζήτηση..."
+
+<% @messages.each do |msg| %>
+  <% is_mine = (msg.user_id == current_user.id) %>
+  var msgHTML = `
+    <div style="display:flex; flex-direction:column; align-items: <%= is_mine ? 'flex-end' : 'flex-start' %>; margin-bottom: 8px;">
+      <div style="max-width:85%; padding:8px 12px; border-radius:18px; font-size:13px; 
+                  background: <%= is_mine ? '#0084ff' : '#e4e6eb' %>; 
+                  color: <%= is_mine ? 'white' : 'black' %>;">
+        <%= j msg.body %>
+      </div>
+      <small style="font-size:10px; color:#65676b; margin-top:2px;">
+        <%= msg.created_at.strftime("%H:%M") %>
+      </small>
+    </div>
+  `;
+  chatContent.insertAdjacentHTML('beforeend', msgHTML);
+<% end %>
+
+scrollBottom();

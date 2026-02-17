@@ -1,0 +1,49 @@
+<div style="display: flex; justify-content: center; align-items: center; min-height: 80vh; background-color: #f0f2f5; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  
+  <div style="background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center;">
+    
+    <h2 style="margin-bottom: 10px; color: #1c1e21; font-size: 28px; font-weight: 800;">Καλώς ορίσατε</h2>
+    <p style="color: #606770; margin-bottom: 30px; font-size: 15px;">Συνδεθείτε για να συνεχίσετε στο Portal</p>
+
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+      
+      <%# Email Field %>
+      <div style="margin-bottom: 15px; text-align: left;">
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "Email", 
+            style: "width: 100%; padding: 14px; border: 1px solid #dddfe2; border-radius: 8px; font-size: 16px; box-sizing: border-box; outline: none; transition: 0.2s;" %>
+      </div>
+
+      <%# Password Field %>
+      <div style="margin-bottom: 15px; text-align: left;">
+        <%= f.password_field :password, autocomplete: "current-password", placeholder: "Κωδικός πρόσβασης",
+            style: "width: 100%; padding: 14px; border: 1px solid #dddfe2; border-radius: 8px; font-size: 16px; box-sizing: border-box; outline: none;" %>
+      </div>
+
+      
+
+      <%# Login Button %>
+      <div style="margin-bottom: 20px;">
+        <%= f.submit "Σύνδεση", 
+            style: "width: 100%; padding: 14px; background-color: #0084ff; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.3s;" %>
+      </div>
+    <% end %>
+
+    <div style="display: flex; align-items: center; margin: 20px 0; color: #bec3c9;">
+      <hr style="flex: 1; border: 0; border-top: 1px solid #dddfe2;">
+      <span style="padding: 0 10px; font-size: 13px; text-transform: uppercase;">ή</span>
+      <hr style="flex: 1; border: 0; border-top: 1px solid #dddfe2;">
+    </div>
+
+    <%# Google Login %>
+    <%= button_to user_google_oauth2_omniauth_authorize_path, data: { turbo: false }, 
+        style: "width: 75,5%; height: 30%; padding: 0px; margin: 0px; background: white; border: 1px solid #dddfe2; border-radius: 8px; display: inline-block; align-items: center; justify-content: center; gap: 10px; cursor: pointer; font-size: 8px;line-height: 0;outline: none; color: #4b4f56; font-weight: 400; text-decoration: none;" do %>
+      <%= image_tag "google.jpg", style: "display: block; width: 150px; height: auto;" %>
+      
+    <% end %>
+
+    <div style="margin-top: 25px; border-top: 1px solid #f0f2f5; padding-top: 20px;">
+      <%= render "devise/shared/links" %>
+    </div>
+
+  </div>
+</div>
